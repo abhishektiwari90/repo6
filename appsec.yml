@@ -1,0 +1,42 @@
+version: 1.0
+stages:
+  - name: "Build"
+    commands:
+      - echo "Starting security scan during build phase..."
+      # Install security scanning tools
+      - apt-get install -y trivy  # For scanning Docker images (example)
+      # Run security scan on the source code or Docker image
+      - trivy image docker-website  # Replace with your tool if necessary
+      - echo "Build phase security check completed."
+
+  - name: "Test"
+    commands:
+      - echo "Running tests with security analysis..."
+      # Run any tests you have along with security checks
+      - security-scan-tool --scan-tests ./tests  # Replace with your security tool
+      - echo "Test phase security check completed."
+
+  - name: "Deploy"
+    commands:
+      - echo "Running security checks during deploy phase..."
+      # Security checks for deployment
+      - security-scan-tool --scan-deployment ./deploy  # Replace with your security tool
+      - echo "Deployment security checks completed."
+      
+      # Install CodeDeploy Agent during deployment
+      - echo "Adding AWS CodeDeploy repository..."
+      - echo "deb https://github.com/aws/aws-codedeploy-agent/releases/download/latest/ codedeploy-agent-1.0.0-1.x86_64.deb" | sudo tee -a /etc/apt/sources.list
+      - sudo apt-get update
+      - sudo apt-get install -y codedeploy-agent
+      - echo "CodeDeploy agent installed."
+
+      # Start the CodeDeploy Agent
+      - sudo service codedeploy-agent start
+      - sudo service codedeploy-agent status
+      
+      # Deploy the Docker container (Same as in buildspec)
+      - echo "Deploying the application..."
+      - docker pull 287870619061.dkr.ecr.us-east-1.amazonaws.com/docker-website-repo:latest
+      - docker run -d -p 80:80 287870619061.dkr.ecr.us-east-1.amazonaws.com/docker-website-repo:latest
+      - echo "Application deployed successfully."
+

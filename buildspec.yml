@@ -1,0 +1,24 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo Installing Docker...
+      - apt-get update
+      - apt-get install -y docker.io
+
+  build:
+    commands:
+      - echo Building Docker image...
+      - docker build -t docker-website .
+      - docker tag docker-website:latest 287870619061.dkr.ecr.us-east-1.amazonaws.com/docker-website-repo:latest
+
+  post_build:
+    commands:
+      - echo Pushing Docker image to ECR...
+      - docker push 287870619061.dkr.ecr.us-east-1.amazonaws.com/docker-website-repo:latest
+
+artifacts:
+  files:
+    - '**/*'
+
